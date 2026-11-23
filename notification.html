@@ -1,0 +1,186 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VRS Notifications</title>
+
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background: #FAFAFA;
+  color: #1A1A1A;
+  padding: 22px 16px 40px;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 25px;
+}
+
+.back {
+  border: 0;
+  background: #1A1A1A;
+  color: white;
+  width: 42px;
+  height: 42px;
+  border-radius: 13px;
+  font-size: 22px;
+  cursor: pointer;
+}
+
+h1 {
+  font-size: 23px;
+}
+
+.subtitle {
+  color: #777;
+  font-size: 13px;
+  margin-top: 5px;
+}
+
+.notification {
+  background: white;
+  border: 1px solid #eee;
+  border-left: 4px solid #FF9900;
+  border-radius: 15px;
+  padding: 17px;
+  margin-bottom: 13px;
+  box-shadow: 0 4px 15px rgba(0,0,0,.04);
+}
+
+.notification h3 {
+  font-size: 16px;
+  margin-bottom: 8px;
+}
+
+.notification p {
+  font-size: 14px;
+  line-height: 1.5;
+  color: #555;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.date {
+  font-size: 11px;
+  color: #999;
+  margin-top: 12px;
+}
+
+#status {
+  text-align: center;
+  color: #888;
+  padding: 35px 10px;
+  font-size: 14px;
+}
+
+</style>
+</head>
+
+<body>
+
+<header>
+  <button class="back" onclick="history.back()">‹</button>
+  <div>
+    <h1>Notifications</h1>
+    <div class="subtitle">VRS Route Guider updates</div>
+  </div>
+</header>
+
+<div id="status">Loading notifications...</div>
+<div id="notificationList"></div>
+
+<script type="module">
+
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+
+import {
+  getFirestore,
+  collection,
+  query,
+  orderBy,
+  limit,
+  onSnapshot
+}
+from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBND3n2ag9qGZG5SJPOKNVYr2dHNLwoD7Y",
+  authDomain: "rhk-music-24bbc.firebaseapp.com",
+  databaseURL: "https://rhk-music-24bbc-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "rhk-music-24bbc",
+  storageBucket: "rhk-music-24bbc.firebasestorage.app",
+  messagingSenderId: "571438674805",
+  appId: "1:571438674805:web:bcfe7856316b638d08193c",
+  measurementId: "G-RF4GEDGP9N"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const list = document.getElementById("notificationList");
+const status = document.getElementById("status");
+
+const notificationsQuery = query(
+  collection(db, "vrs_notifications"),
+  orderBy("createdAt", "desc"),
+  limit(50)
+);
+
+onSnapshot(notificationsQuery, (snapshot) => {
+
+  list.innerHTML = "";
+
+  if (snapshot.empty) {
+    status.textContent = "No notifications yet.";
+    return;
+  }
+
+  status.style.display = "none";
+
+  snapshot.forEach((doc) => {
+
+    const data = doc.data();
+
+    const card = document.createElement("article");
+    card.className = "notification";
+
+    const title = document.createElement("h3");
+    title.textContent = data.title || "VRS Update";
+
+    const message = document.createElement("p");
+    message.textContent = data.message || "";
+
+    const date = document.createElement("div");
+    date.className = "date";
+
+    if (data.createdAt && data.createdAt.toDate) {
+      date.textContent = data.createdAt.toDate().toLocaleString();
+    } else {
+      date.textContent = "Just now";
+    }
+
+    card.append(title, message, date);
+    list.appendChild(card);
+  });
+
+}, (error) => {
+  console.error(error);
+  status.textContent = "Unable to load notifications. Please try again.";
+});
+
+</script>
+
+</body>
+</html>
