@@ -1,0 +1,409 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#FAFAFA">
+
+<title>VRS Route Guider</title>
+
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background: #FAFAFA;
+  color: #1A1A1A;
+  min-height: 100vh;
+  padding-bottom: 75px;
+}
+
+/* HEADER */
+
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 62px;
+  background: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 18px;
+  border-bottom: 1px solid #EEEEEE;
+  z-index: 100;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo {
+  width: 38px;
+  height: 38px;
+  background: #FF9900;
+  color: #1A1A1A;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 15px;
+}
+
+.brand-name {
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.brand-subtitle {
+  font-size: 9px;
+  color: #888888;
+  letter-spacing: 1px;
+  margin-top: 3px;
+}
+
+.notification-button {
+  width: 39px;
+  height: 39px;
+  border: none;
+  border-radius: 11px;
+  background: #FF9900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.notification-button svg {
+  width: 21px;
+  height: 21px;
+  fill: none;
+  stroke: #1A1A1A;
+  stroke-width: 2;
+}
+
+/* NEARBY CONTENT */
+
+.main-content {
+  width: 100%;
+  padding-top: 62px;
+}
+
+.nearby-frame {
+  width: 100%;
+  height: 650px;
+  display: block;
+  border: none;
+  background: #FAFAFA;
+}
+
+/* BOTTOM NAVIGATION */
+
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 65px;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  background: rgba(255,255,255,0.96);
+  border-top: 1px solid #EEEEEE;
+  z-index: 200;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.nav-item {
+  flex: 1;
+  height: 100%;
+  text-decoration: none;
+  color: #777777;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.nav-item svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.nav-item.active {
+  color: #FF9900;
+}
+
+/* SNACKBAR */
+
+#vrsSnackbar {
+  position: fixed;
+  left: 15px;
+  right: 15px;
+  bottom: 80px;
+  background: #1A1A1A;
+  color: #FFFFFF;
+  padding: 15px 17px;
+  border-left: 4px solid #FF9900;
+  border-radius: 12px;
+  box-shadow: 0 6px 22px rgba(0,0,0,0.2);
+  z-index: 500;
+  display: none;
+  cursor: pointer;
+  animation: snackbarIn 0.3s ease;
+}
+
+#vrsSnackTitle {
+  display: block;
+  color: #FF9900;
+  font-size: 14px;
+  font-weight: bold;
+  margin-bottom: 6px;
+}
+
+#vrsSnackMessage {
+  font-size: 13px;
+  color: #EEEEEE;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+@keyframes snackbarIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+</style>
+</head>
+
+<body>
+
+<!-- HEADER -->
+
+<header class="header">
+
+  <div class="brand">
+    <div class="logo">VRS</div>
+
+    <div>
+      <div class="brand-name">ROUTE GUIDER</div>
+      <div class="brand-subtitle">YOUR JOURNEY, SIMPLIFIED</div>
+    </div>
+  </div>
+
+  <button
+    class="notification-button"
+    onclick="window.location.href='notification.html'"
+    aria-label="Notifications">
+
+    <svg viewBox="0 0 24 24">
+      <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/>
+      <path d="M10 21h4"/>
+    </svg>
+
+  </button>
+
+</header>
+
+
+<!-- NEARBY PAGE -->
+
+<main class="main-content">
+
+  <iframe
+    id="nearbyFrame"
+    class="nearby-frame"
+    src="nearby.html"
+    title="Nearby Transport">
+  </iframe>
+
+</main>
+
+
+<!-- SNACKBAR -->
+
+<div id="vrsSnackbar">
+  <strong id="vrsSnackTitle">VRS Update</strong>
+  <p id="vrsSnackMessage"></p>
+</div>
+
+
+<!-- BOTTOM NAVIGATION -->
+
+<nav class="bottom-nav">
+
+  <a href="home.html" class="nav-item active">
+
+    <svg viewBox="0 0 24 24">
+      <path d="m3 10 9-7 9 7"/>
+      <path d="M5 9v11h14V9"/>
+      <path d="M9 20v-7h6v7"/>
+    </svg>
+
+    <span>Home</span>
+  </a>
+
+
+  <a href="map.html" class="nav-item">
+
+    <svg viewBox="0 0 24 24">
+      <path d="m3 6 6-3 6 3 6-3v15l-6 3-6-3-6 3z"/>
+      <path d="M9 3v15"/>
+      <path d="M15 6v15"/>
+    </svg>
+
+    <span>Map</span>
+  </a>
+
+
+  <a href="profile.html" class="nav-item">
+
+    <svg viewBox="0 0 24 24">
+      <circle cx="12" cy="8" r="4"/>
+      <path d="M4 21a8 8 0 0 1 16 0"/>
+    </svg>
+
+    <span>Profile</span>
+  </a>
+
+</nav>
+
+
+<!-- NEARBY IFRAME HEIGHT CONNECTION -->
+
+<script>
+window.addEventListener("message", function(event) {
+
+  const frame = document.getElementById("nearbyFrame");
+
+  // Accept height messages only from the nearby iframe.
+  if (event.source !== frame.contentWindow) return;
+
+  const data = event.data;
+
+  if (
+    data &&
+    data.type === "nearby-height" &&
+    Number.isFinite(Number(data.height))
+  ) {
+    frame.style.height =
+      Math.max(300, Math.min(Number(data.height), 3000)) + "px";
+  }
+
+});
+</script>
+
+
+<!-- FIREBASE NOTIFICATIONS -->
+
+<script type="module">
+
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+
+import {
+  getFirestore,
+  collection,
+  query,
+  orderBy,
+  limit,
+  onSnapshot
+}
+from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBND3n2ag9qGZG5SJPOKNVYr2dHNLwoD7Y",
+  authDomain: "rhk-music-24bbc.firebaseapp.com",
+  databaseURL: "https://rhk-music-24bbc-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "rhk-music-24bbc",
+  storageBucket: "rhk-music-24bbc.firebasestorage.app",
+  messagingSenderId: "571438674805",
+  appId: "1:571438674805:web:bcfe7856316b638d08193c",
+  measurementId: "G-RF4GEDGP9N"
+};
+
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const snackbar = document.getElementById("vrsSnackbar");
+const snackTitle = document.getElementById("vrsSnackTitle");
+const snackMessage = document.getElementById("vrsSnackMessage");
+
+let firstSnapshot = true;
+let hideTimer;
+
+
+const notificationsQuery = query(
+  collection(db, "vrs_notifications"),
+  orderBy("createdAt", "desc"),
+  limit(1)
+);
+
+
+onSnapshot(notificationsQuery, (snapshot) => {
+
+  // Do not show old notifications when home first opens.
+  if (firstSnapshot) {
+    firstSnapshot = false;
+    return;
+  }
+
+  snapshot.docChanges().forEach((change) => {
+
+    if (change.type !== "added") return;
+
+    const data = change.doc.data();
+
+    snackTitle.textContent = data.title || "VRS Update";
+    snackMessage.textContent = data.message || "";
+
+    snackbar.style.display = "block";
+
+    clearTimeout(hideTimer);
+
+    hideTimer = setTimeout(() => {
+      snackbar.style.display = "none";
+    }, 5000);
+
+  });
+
+}, (error) => {
+
+  console.error("VRS notification error:", error);
+
+});
+
+
+snackbar.addEventListener("click", () => {
+  window.location.href = "notification.html";
+});
+
+</script>
+
+</body>
+</html>
