@@ -1,0 +1,712 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nearby Transport | VRS</title>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: #FAFAFA;
+    color: #1A1A1A;
+    padding: 16px;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px;
+}
+
+.header h2 {
+    font-size: 21px;
+    font-weight: 800;
+}
+
+.header p {
+    font-size: 12px;
+    color: #777;
+    margin-top: 5px;
+}
+
+.refresh {
+    background: #FF9900;
+    border: none;
+    color: #1A1A1A;
+    padding: 11px 14px;
+    border-radius: 10px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.location-box {
+    background: #fff;
+    border: 1px solid #eee;
+    border-radius: 14px;
+    padding: 14px;
+    margin-bottom: 17px;
+    display: flex;
+    align-items: center;
+    gap: 11px;
+}
+
+.location-icon {
+    width: 38px;
+    height: 38px;
+    background: #FFF0D9;
+    border-radius: 11px;
+    display: grid;
+    place-items: center;
+    font-size: 20px;
+}
+
+.location-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.location-info strong {
+    font-size: 13px;
+}
+
+.location-info p {
+    font-size: 11px;
+    color: #777;
+    margin-top: 4px;
+    overflow-wrap: anywhere;
+}
+
+.tabs {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    margin-bottom: 17px;
+    scrollbar-width: none;
+}
+
+.tabs button {
+    border: 1px solid #eee;
+    background: white;
+    padding: 11px 15px;
+    border-radius: 30px;
+    white-space: nowrap;
+    font-weight: bold;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.tabs button.active {
+    background: #FF9900;
+    border-color: #FF9900;
+    color: #1A1A1A;
+}
+
+.section-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.section-heading h3 {
+    font-size: 16px;
+}
+
+.count {
+    color: #888;
+    font-size: 12px;
+}
+
+.results {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.place-card {
+    background: white;
+    border: 1px solid #eee;
+    border-radius: 14px;
+    padding: 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.place-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: grid;
+    place-items: center;
+    font-size: 22px;
+    flex-shrink: 0;
+}
+
+.bus-bg {
+    background: #FFF0D9;
+}
+
+.metro-bg {
+    background: #E9F0FF;
+}
+
+.rail-bg {
+    background: #E8F6EC;
+}
+
+.place-details {
+    flex: 1;
+    min-width: 0;
+}
+
+.place-details h4 {
+    font-size: 14px;
+    overflow-wrap: anywhere;
+}
+
+.place-details p {
+    color: #888;
+    font-size: 11px;
+    margin-top: 5px;
+}
+
+.distance {
+    color: #E58A00;
+    font-size: 12px;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+.directions {
+    display: inline-block;
+    margin-top: 8px;
+    color: #1A1A1A;
+    font-size: 11px;
+    font-weight: bold;
+    text-decoration: none;
+    background: #FFF0D9;
+    padding: 7px 10px;
+    border-radius: 7px;
+}
+
+.message {
+    text-align: center;
+    padding: 30px 15px;
+    background: white;
+    border: 1px solid #eee;
+    border-radius: 14px;
+    color: #777;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.message strong {
+    display: block;
+    color: #1A1A1A;
+    font-size: 15px;
+    margin-bottom: 7px;
+}
+
+.hidden {
+    display: none;
+}
+
+.loading {
+    text-align: center;
+    padding: 25px 10px;
+    color: #777;
+    font-size: 13px;
+}
+
+.spinner {
+    width: 27px;
+    height: 27px;
+    border: 3px solid #eee;
+    border-top-color: #FF9900;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 12px;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.footer {
+    text-align: center;
+    color: #aaa;
+    font-size: 10px;
+    margin-top: 18px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+    <div>
+        <h2>Nearby Transport</h2>
+        <p>Find public transport around you</p>
+    </div>
+
+    <button class="refresh" onclick="loadNearby()">
+        ↻ Refresh
+    </button>
+</div>
+
+<div class="location-box">
+    <div class="location-icon">📍</div>
+    <div class="location-info">
+        <strong id="locationTitle">Your location</strong>
+        <p id="locationText">Waiting for location permission...</p>
+    </div>
+</div>
+
+<div class="tabs">
+    <button class="active" onclick="changeTab('all', this)">All</button>
+    <button onclick="changeTab('bus', this)">🚌 Bus</button>
+    <button onclick="changeTab('metro', this)">🚇 Metro</button>
+    <button onclick="changeTab('rail', this)">🚆 Railway</button>
+</div>
+
+<div class="section-heading">
+    <h3 id="sectionTitle">Nearby places</h3>
+    <span class="count" id="resultCount">0 found</span>
+</div>
+
+<div id="loading" class="loading hidden">
+    <div class="spinner"></div>
+    Finding nearby transport...
+</div>
+
+<div id="results" class="results"></div>
+
+<div id="errorBox" class="message hidden">
+    <strong>Unable to find nearby places</strong>
+    <span id="errorText">Please try again.</span>
+</div>
+
+<div class="footer">
+    Location-based results • OpenStreetMap
+</div>
+
+<script>
+let currentLocation = null;
+let allPlaces = [];
+let currentTab = "all";
+
+const results = document.getElementById("results");
+const loading = document.getElementById("loading");
+const errorBox = document.getElementById("errorBox");
+
+function sendHeight() {
+    if (window.parent !== window) {
+        window.parent.postMessage({
+            type: "nearby-height",
+            height: document.documentElement.scrollHeight
+        }, "*");
+    }
+}
+
+const resizeObserver = new ResizeObserver(sendHeight);
+resizeObserver.observe(document.body);
+
+function showLoading(show) {
+    loading.classList.toggle("hidden", !show);
+    results.classList.toggle("hidden", show);
+
+    if (show) {
+        errorBox.classList.add("hidden");
+    }
+
+    sendHeight();
+}
+
+function escapeHTML(value) {
+    return String(value || "").replace(/[&<>"']/g, function(char) {
+        return {
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            '"': "&quot;",
+            "'": "&#039;"
+        }[char];
+    });
+}
+
+function getDistance(lat1, lon1, lat2, lon2) {
+    const R = 6371;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+
+    const a =
+        Math.sin(dLat / 2) ** 2 +
+        Math.cos(lat1 * Math.PI / 180) *
+        Math.cos(lat2 * Math.PI / 180) *
+        Math.sin(dLon / 2) ** 2;
+
+    return R * 2 * Math.atan2(
+        Math.sqrt(a),
+        Math.sqrt(1 - a)
+    );
+}
+
+function getCategory(tags) {
+    const railway = tags.railway || "";
+    const station = tags.station || "";
+    const publicTransport = tags.public_transport || "";
+
+    if (
+        station === "subway" ||
+        tags.subway === "yes" ||
+        railway === "subway"
+    ) {
+        return "metro";
+    }
+
+    if (
+        railway === "station" ||
+        railway === "halt" ||
+        station === "rail"
+    ) {
+        return "rail";
+    }
+
+    if (
+        tags.highway === "bus_stop" ||
+        (publicTransport === "platform" && tags.bus === "yes") ||
+        (publicTransport === "stop_position" && tags.bus === "yes")
+    ) {
+        return "bus";
+    }
+
+    return null;
+}
+
+function getCoordinates(element) {
+    if (typeof element.lat === "number" &&
+        typeof element.lon === "number") {
+        return {
+            lat: element.lat,
+            lon: element.lon
+        };
+    }
+
+    if (element.center &&
+        typeof element.center.lat === "number" &&
+        typeof element.center.lon === "number") {
+        return {
+            lat: element.center.lat,
+            lon: element.center.lon
+        };
+    }
+
+    return null;
+}
+
+function makeQuery(lat, lon) {
+    return `
+[out:json][timeout:30];
+(
+  nwr(around:5000,${lat},${lon})["highway"="bus_stop"];
+  nwr(around:5000,${lat},${lon})["public_transport"="platform"]["bus"="yes"];
+  nwr(around:5000,${lat},${lon})["railway"~"station|halt|subway"];
+  nwr(around:5000,${lat},${lon})["station"="subway"];
+  nwr(around:5000,${lat},${lon})["station"="rail"];
+);
+out center tags;
+`;
+}
+
+async function fetchNearby(lat, lon) {
+    const query = makeQuery(lat, lon);
+
+    const servers = [
+        "https://overpass-api.de/api/interpreter",
+        "https://overpass.kumi.systems/api/interpreter"
+    ];
+
+    let lastError;
+
+    for (const server of servers) {
+        try {
+            const response = await fetch(server, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded"
+                },
+                body: "data=" + encodeURIComponent(query)
+            });
+
+            if (!response.ok) {
+                throw new Error("Map service returned " + response.status);
+            }
+
+            const data = await response.json();
+
+            if (!Array.isArray(data.elements)) {
+                throw new Error("Invalid map data");
+            }
+
+            return data.elements;
+
+        } catch (error) {
+            lastError = error;
+        }
+    }
+
+    throw lastError || new Error("Map service unavailable");
+}
+
+function normalizePlaces(elements) {
+    const places = [];
+    const seen = new Set();
+
+    elements.forEach(element => {
+        const tags = element.tags || {};
+        const category = getCategory(tags);
+        const coordinates = getCoordinates(element);
+
+        if (!category || !coordinates) return;
+
+        const name =
+            tags.name ||
+            tags["name:en"] ||
+            tags.ref ||
+            (category === "bus" ? "Bus Stop" :
+             category === "metro" ? "Metro Station" :
+             "Railway Station");
+
+        const key = category + "_" +
+            coordinates.lat.toFixed(5) + "_" +
+            coordinates.lon.toFixed(5);
+
+        if (seen.has(key)) return;
+        seen.add(key);
+
+        const distance = getDistance(
+            currentLocation.lat,
+            currentLocation.lon,
+            coordinates.lat,
+            coordinates.lon
+        );
+
+        places.push({
+            name,
+            category,
+            lat: coordinates.lat,
+            lon: coordinates.lon,
+            distance,
+            id: element.id
+        });
+    });
+
+    return places.sort((a, b) => a.distance - b.distance);
+}
+
+function formatDistance(distance) {
+    if (distance < 1) {
+        return Math.round(distance * 1000) + " m away";
+    }
+
+    return distance.toFixed(1) + " km away";
+}
+
+function renderPlaces() {
+    let filtered = allPlaces;
+
+    if (currentTab !== "all") {
+        filtered = allPlaces.filter(
+            place => place.category === currentTab
+        );
+    }
+
+    const titles = {
+        all: "Nearby places",
+        bus: "Nearby bus stops",
+        metro: "Nearby metro stations",
+        rail: "Nearby railway stations"
+    };
+
+    document.getElementById("sectionTitle").textContent =
+        titles[currentTab];
+
+    document.getElementById("resultCount").textContent =
+        filtered.length + " found";
+
+    if (filtered.length === 0) {
+        results.innerHTML = `
+            <div class="message">
+                <strong>No places found</strong>
+                No matching transport locations were found
+                within 5 km of your location.
+            </div>
+        `;
+        sendHeight();
+        return;
+    }
+
+    results.innerHTML = filtered.map(place => {
+        const icon =
+            place.category === "bus" ? "🚌" :
+            place.category === "metro" ? "🚇" : "🚆";
+
+        const bg =
+            place.category === "bus" ? "bus-bg" :
+            place.category === "metro" ? "metro-bg" : "rail-bg";
+
+        const categoryName =
+            place.category === "bus" ? "Bus Stop" :
+            place.category === "metro" ? "Metro Station" :
+            "Railway Station";
+
+        const mapsUrl =
+            "https://www.google.com/maps/dir/?api=1&destination=" +
+            place.lat + "," + place.lon;
+
+        return `
+            <div class="place-card">
+                <div class="place-icon ${bg}">${icon}</div>
+
+                <div class="place-details">
+                    <h4>${escapeHTML(place.name)}</h4>
+                    <p>${categoryName}</p>
+
+                    <a class="directions"
+                       href="${mapsUrl}"
+                       target="_blank"
+                       rel="noopener">
+                       Get directions →
+                    </a>
+                </div>
+
+                <div class="distance">
+                    ${formatDistance(place.distance)}
+                </div>
+            </div>
+        `;
+    }).join("");
+
+    sendHeight();
+}
+
+function changeTab(tab, button) {
+    currentTab = tab;
+
+    document.querySelectorAll(".tabs button").forEach(btn => {
+        btn.classList.remove("active");
+    });
+
+    button.classList.add("active");
+
+    renderPlaces();
+}
+
+function showError(message) {
+    loading.classList.add("hidden");
+    results.classList.add("hidden");
+    errorBox.classList.remove("hidden");
+
+    document.getElementById("errorText").textContent = message;
+
+    document.getElementById("resultCount").textContent = "0 found";
+
+    sendHeight();
+}
+
+function loadNearby() {
+    if (!navigator.geolocation) {
+        showError("Your browser does not support location access.");
+        return;
+    }
+
+    showLoading(true);
+
+    document.getElementById("locationTitle").textContent =
+        "Detecting location...";
+
+    document.getElementById("locationText").textContent =
+        "Please allow location access on your phone.";
+
+    navigator.geolocation.getCurrentPosition(
+        async function(position) {
+            currentLocation = {
+                lat: position.coords.latitude,
+                lon: position.coords.longitude
+            };
+
+            document.getElementById("locationTitle").textContent =
+                "Location detected";
+
+            document.getElementById("locationText").textContent =
+                currentLocation.lat.toFixed(5) + ", " +
+                currentLocation.lon.toFixed(5);
+
+            try {
+                const elements = await fetchNearby(
+                    currentLocation.lat,
+                    currentLocation.lon
+                );
+
+                allPlaces = normalizePlaces(elements);
+
+                errorBox.classList.add("hidden");
+                results.classList.remove("hidden");
+                loading.classList.add("hidden");
+
+                renderPlaces();
+
+            } catch (error) {
+                showError(
+                    "Nearby map data could not be loaded. " +
+                    "Please check your internet connection and try again."
+                );
+            }
+        },
+
+        function(error) {
+            let message = "Unable to access your location.";
+
+            if (error.code === 1) {
+                message =
+                    "Location permission was denied. Allow location access in your browser settings.";
+            } else if (error.code === 2) {
+                message =
+                    "Your current location is unavailable. Turn on your phone's location service.";
+            } else if (error.code === 3) {
+                message =
+                    "Location request timed out. Please try again.";
+            }
+
+            document.getElementById("locationTitle").textContent =
+                "Location unavailable";
+
+            document.getElementById("locationText").textContent =
+                "Location permission is required.";
+
+            showError(message);
+        },
+
+        {
+            enableHighAccuracy: true,
+            timeout: 20000,
+            maximumAge: 60000
+        }
+    );
+}
+
+loadNearby();
+</script>
+
+</body>
+</html>
