@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>VRS Route Guider</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #FAFAFA; overflow: hidden; }
+  svg { width: 100vw; height: 100vh; display: block; }
+
+  /* VRS Letters in Orange */
+  .l { fill: none; stroke: #FF9900; stroke-width: 6.5; stroke-linecap: round; stroke-linejoin: round; }
+
+  /* Letters slide together at the end */
+  .mv { animation: gather 1s cubic-bezier(.65,0,.25,1) 3.7s both; }
+  @keyframes gather {
+    from { transform: translate(var(--x), var(--y)); }
+    to   { transform: translate(0, 0); }
+  }
+
+  /* V: drops from the top and bounces */
+  .v-in { animation: vdrop .8s ease-out .2s both; }
+  @keyframes vdrop {
+    0%   { transform: translateY(-140px); opacity: 0; }
+    55%  { transform: translateY(0);      opacity: 1; }
+    72%  { transform: translateY(-14px); }
+    88%  { transform: translateY(0); }
+    94%  { transform: translateY(-4px); }
+    100% { transform: translateY(0);      opacity: 1; }
+  }
+
+  /* R: draws itself like a pen stroke */
+  .r-in { stroke-dasharray: 1 1; animation: rdraw .8s ease-in-out 1.7s both; }
+  @keyframes rdraw {
+    0%   { stroke-dashoffset: 1; opacity: 0; }
+    2%   { stroke-dashoffset: 1; opacity: 1; }
+    100% { stroke-dashoffset: 0; opacity: 1; }
+  }
+
+  /* S: spins and zooms in */
+  .s-in { transform-box: fill-box; transform-origin: center;
+          animation: sspin .8s cubic-bezier(.2,.9,.3,1.2) 3s both; }
+  @keyframes sspin {
+    from { transform: rotate(-360deg) scale(0); opacity: 0; }
+    to   { transform: rotate(0deg) scale(1);    opacity: 1; }
+  }
+
+  /* Route line in Charcoal Black for crisp contrast */
+  .route { fill: none; stroke: #1A1A1A; stroke-width: 3; stroke-linecap: round;
+           stroke-dasharray: 1; stroke-dashoffset: 1; }
+  .r1 { animation: draw .8s linear .9s forwards, fade .5s ease 3.5s forwards; }
+  .r2 { animation: draw .8s linear 2.2s forwards, fade .5s ease 3.5s forwards; }
+  @keyframes draw { to { stroke-dashoffset: 0; } }
+  @keyframes fade { to { opacity: 0; } }
+
+  /* Car driving along V -> R and R -> S */
+  .car { opacity: 0; offset-rotate: auto; }
+  .car1 {
+    offset-path: path("M82 203 C82 305 178 285 180 391");
+    animation: drive .8s linear .9s forwards;
+  }
+  .car2 {
+    offset-path: path("M199 452 C265 480 310 330 278 203");
+    animation: drive .8s linear 2.2s forwards;
+  }
+  @keyframes drive {
+    0%   { offset-distance: 0%;   opacity: 1; }
+    88%  { offset-distance: 88%;  opacity: 1; }
+    100% { offset-distance: 100%; opacity: 0; }
+  }
+
+  /* Finish: Black pin with Orange center, Black dashed line, Orange title */
+  .pin   { opacity: 0; animation: drop .6s cubic-bezier(.3,1.6,.5,1) 4.6s forwards; }
+  .base  { stroke: #1A1A1A; stroke-width: 2.5; stroke-linecap: round; stroke-dasharray: 1 8;
+           opacity: 0; animation: show .1s linear 4.6s forwards; }
+  .title { fill: #FF9900; font: 700 13px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+           letter-spacing: 5px; text-anchor: middle; opacity: 0; animation: rise .8s ease 4.7s forwards; }
+  @keyframes show { to { opacity: 1; } }
+  @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes drop { from { opacity: 0; transform: translateY(-30px); } to { opacity: 1; transform: translateY(0); } }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation-duration: .01s !important; animation-delay: 0s !important; }
+  }
+</style>
+</head>
+<body>
+<svg viewBox="0 0 360 640" preserveAspectRatio="xMidYMid meet" role="img" aria-label="VRS Route Guider">
+
+  <!-- Route: V -> R, then R -> S -->
+  <path class="route r1" pathLength="1" d="M82 203 C82 305 178 285 180 391"/>
+  <path class="route r2" pathLength="1" d="M199 452 C265 480 310 330 278 203"/>
+
+  <!-- Car: V -> R -->
+  <g class="car car1">
+    <!-- Wheels -->
+    <rect x="-7.5" y="-7.6" width="5" height="2.2" rx="1" fill="#1A1A1A"/>
+    <rect x="3" y="-7.6" width="5" height="2.2" rx="1" fill="#1A1A1A"/>
+    <rect x="-7.5" y="5.4" width="5" height="2.2" rx="1" fill="#1A1A1A"/>
+    <rect x="3" y="5.4" width="5" height="2.2" rx="1" fill="#1A1A1A"/>
+    <!-- Car body -->
+    <rect x="-12" y="-6.2" width="24" height="12.4" rx="4.5" fill="#FF9900" stroke="#1A1A1A" stroke-width="1.6"/>
+    <!-- Roof & windshield -->
+    <rect x="-5.5" y="-4.2" width="10.5" height="8.4" rx="2" fill="#262626"/>
+    <path d="M-2.5 -3.6 L2.5 -3.6 L3.8 -2 L3.8 2 L2.5 3.6 L-2.5 3.6 L-3.8 2 L-3.8 -2 Z" fill="#4A4A4A"/>
+    <!-- Headlights & taillights -->
+    <ellipse cx="11.2" cy="-3.6" rx="1.1" ry="1.6" fill="#FFFDF5"/>
+    <ellipse cx="11.2" cy="3.6" rx="1.1" ry="1.6" fill="#FFFDF5"/>
+    <rect x="-11.6" y="-4.3" width="1.3" height="2.4" rx="0.5" fill="#D9381E"/>
+    <rect x="-11.6" y="1.9" width="1.3" height="2.4" rx="0.5" fill="#D9381E"/>
+  </g>
+
+  <!-- Car: R -> S -->
+  <g class="car car2">
+    <!-- Wheels -->
+    <rect x="-7.5" y="-7.6" width="5" height="2.2" rx="1" fill="#1A1A1A"/>
+    <rect x="3" y="-7.6" width="5" height="2.2" rx="1" fill="#1A1A1A"/>
+    <rect x="-7.5" y="5.4" width="5" height="2.2" rx="1" fill="#1A1A1A"/>
+    <rect x="3" y="5.4" width="5" height="2.2" rx="1" fill="#1A1A1A"/>
+    <!-- Car body -->
+    <rect x="-12" y="-6.2" width="24" height="12.4" rx="4.5" fill="#FF9900" stroke="#1A1A1A" stroke-width="1.6"/>
+    <!-- Roof & windshield -->
+    <rect x="-5.5" y="-4.2" width="10.5" height="8.4" rx="2" fill="#262626"/>
+    <path d="M-2.5 -3.6 L2.5 -3.6 L3.8 -2 L3.8 2 L2.5 3.6 L-2.5 3.6 L-3.8 2 L-3.8 -2 Z" fill="#4A4A4A"/>
+    <!-- Headlights & taillights -->
+    <ellipse cx="11.2" cy="-3.6" rx="1.1" ry="1.6" fill="#FFFDF5"/>
+    <ellipse cx="11.2" cy="3.6" rx="1.1" ry="1.6" fill="#FFFDF5"/>
+    <rect x="-11.6" y="-4.3" width="1.3" height="2.4" rx="0.5" fill="#D9381E"/>
+    <rect x="-11.6" y="1.9" width="1.3" height="2.4" rx="0.5" fill="#D9381E"/>
+  </g>
+
+  <!-- V: drop and bounce -->
+  <g transform="translate(106,280)"><g class="mv" style="--x:-42px;--y:-130px"><g class="v-in">
+    <path class="l" d="M3 3 L18 45 L33 3"/></g></g></g>
+
+  <!-- R: pen-stroke draw -->
+  <g transform="translate(162,280)"><g class="mv" style="--x:0px;--y:120px">
+    <path class="l r-in" pathLength="1" d="M5 45 L5 3 L21 3 Q33 3 33 14.5 Q33 26 21 26 L5 26 M20 26 L33 45"/></g></g>
+
+  <!-- S: spin and zoom -->
+  <g transform="translate(218,280)"><g class="mv" style="--x:42px;--y:-130px"><g class="s-in">
+    <path class="l" d="M32 9 Q28 3 18 3 Q5 3 5 13 Q5 23 18 24 Q32 25 32 35 Q32 45 18 45 Q8 45 4 39"/></g></g></g>
+
+  <!-- Location pin over the R -->
+  <g transform="translate(180,270) scale(.7)"><g class="pin">
+    <path fill="#1A1A1A" d="M0 0 C-10 -14 -15 -21 -15 -28 a15 15 0 1 1 30 0 C15 -21 10 -14 0 0Z"/>
+    <circle cy="-28" r="5.5" fill="#FF9900"/></g></g>
+
+  <line class="base" x1="106" y1="348" x2="254" y2="348"/>
+  <text class="title" x="180" y="378">ROUTE GUIDER</text>
+</svg>
+
+<script>
+  // Open home.html after the splash animation completes
+  setTimeout(function () {
+    window.location.replace("home.html");
+  }, 6000);
+</script>
+</body>
+</html>
